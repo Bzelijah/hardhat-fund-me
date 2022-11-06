@@ -4,9 +4,16 @@ pragma solidity ^0.8.8;
 
 import "./PriceConverter.sol";
 
-    error FundMe_NowOwner();
-    error FundMe_SentNotEnough();
-    error FundMe_CallFailed();
+error FundMe_NowOwner();
+error FundMe_SentNotEnough();
+error FundMe_CallFailed();
+
+/*
+    @title A contract for crowd funding
+    @author Ilya Andreev
+    @notice This contract is to demo a sample funding contract
+    @dev This Implements price feeds our library
+*/
 
 contract FundMe {
     using PriceConverter for uint256;
@@ -17,6 +24,11 @@ contract FundMe {
     address public immutable i_owner;
 
     AggregatorV3Interface public priceFeed;
+
+    modifier onlyOwner() {
+        if (msg.sender != i_owner) { revert FundMe_NowOwner(); }
+        _;
+    }
 
     constructor(address priceFeedAddress) {
         i_owner = msg.sender;
@@ -30,6 +42,10 @@ contract FundMe {
     fallback() external payable {
         fund();
     }
+
+    /*
+    @notice This function funds this contract
+    */
 
     function fund() public payable {
         if (msg.value.getConversionRate(priceFeed) <= MINIMUM_USD) { revert FundMe_SentNotEnough(); }
@@ -47,10 +63,5 @@ contract FundMe {
 
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         if (!callSuccess) { revert FundMe_CallFailed(); }
-    }
-
-    modifier onlyOwner() {
-        if (msg.sender != i_owner) { revert FundMe_NowOwner(); }
-        _;
     }
 }
