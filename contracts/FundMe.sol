@@ -4,9 +4,9 @@ pragma solidity ^0.8.8;
 
 import "./PriceConverter.sol";
 
-    error NotOwner();
-    error SendedNotEnough();
-    error CallFailed();
+    error FundMe_NowOwner();
+    error FundMe_SentNotEnough();
+    error FundMe_CallFailed();
 
 contract FundMe {
     using PriceConverter for uint256;
@@ -32,7 +32,7 @@ contract FundMe {
     }
 
     function fund() public payable {
-        if (msg.value.getConversionRate(priceFeed) <= MINIMUM_USD) { revert SendedNotEnough(); }
+        if (msg.value.getConversionRate(priceFeed) <= MINIMUM_USD) { revert FundMe_SentNotEnough(); }
         funders.push(msg.sender);
         addressToAmountFunded[msg.sender] = msg.value;
     }
@@ -46,11 +46,11 @@ contract FundMe {
         funders = new address[](0);
 
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
-        if (!callSuccess) { revert CallFailed(); }
+        if (!callSuccess) { revert FundMe_CallFailed(); }
     }
 
     modifier onlyOwner() {
-        if (msg.sender != i_owner) { revert NotOwner(); }
+        if (msg.sender != i_owner) { revert FundMe_NowOwner(); }
         _;
     }
 }
