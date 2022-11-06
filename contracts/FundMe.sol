@@ -16,8 +16,11 @@ contract FundMe {
     mapping(address => uint256) public addressToAmountFunded;
     address public immutable i_owner;
 
-    constructor() {
+    AggregatorV3Interface public priceFeed;
+
+    constructor(address priceFeedAddress) {
         i_owner = msg.sender;
+        priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
     receive() external payable {
@@ -29,7 +32,7 @@ contract FundMe {
     }
 
     function fund() public payable {
-        if (msg.value.getConversionRate() <= MINIMUM_USD) { revert SendedNotEnough(); }
+        if (msg.value.getConversionRate(priceFeed) <= MINIMUM_USD) { revert SendedNotEnough(); }
         funders.push(msg.sender);
         addressToAmountFunded[msg.sender] = msg.value;
     }
