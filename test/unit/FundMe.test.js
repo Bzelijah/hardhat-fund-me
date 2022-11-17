@@ -1,5 +1,5 @@
 const { deployments, ethers, getNamedAccounts } = require("hardhat");
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
 
 describe("FundMe", async () => {
    let fundMe;
@@ -17,6 +17,12 @@ describe("FundMe", async () => {
       it("sets the aggregator addresses correctly", async () => {
          const response = await fundMe.priceFeed();
          assert.equal(response, mockV3Aggregator.address);
+      });
+   });
+
+   describe("fund", async () => {
+      it("fails if u don't send enough ETH", async () => {
+         await expect(fundMe.fund()).to.be.revertedWithCustomError(fundMe, 'FundMe_SentNotEnough');
       });
    });
 });
