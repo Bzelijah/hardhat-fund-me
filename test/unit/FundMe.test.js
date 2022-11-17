@@ -5,6 +5,7 @@ describe("FundMe", async () => {
    let fundMe;
    let deployer;
    let mockV3Aggregator;
+   const sendValue = ethers.utils.parseEther("1");
    beforeEach(async () => {
       // const accounts = await ethers.getSigners();
       deployer = (await getNamedAccounts()).deployer;
@@ -23,6 +24,14 @@ describe("FundMe", async () => {
    describe("fund", async () => {
       it("fails if u don't send enough ETH", async () => {
          await expect(fundMe.fund()).to.be.revertedWithCustomError(fundMe, 'FundMe_SentNotEnough');
+      });
+
+      it("updated the amount funded data structure ", async () => {
+         await fundMe.fund({ value: sendValue });
+         const response = await fundMe.addressToAmountFunded(
+             deployer,
+         );
+         assert.equal(response.toString(), sendValue.toString());
       });
    });
 });
